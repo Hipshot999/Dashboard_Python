@@ -105,7 +105,7 @@
 # --- Uppdaterade db på LM och W12, behövs ju på ACTUAL och W10 också,
 # dvs ta fram sql:en och testa.
 # --- GUIt behöver fixas, själva Dashboarden saknar klumnen missing RAW. 
-
+# - Allt ovan nu fixat, behöver lägga till SQL för att uppdatera db på W10&ACTUAL.
 
 import os
 from os.path import join
