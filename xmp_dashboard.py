@@ -99,6 +99,11 @@
 # anropar. I den finns rätt sträng för att connecta till rätt databas.
 # v1.0 191127
 # Andra försöket i git, tar bort ver-hantering i namnet, och passar på att stega till 1.0
+# 191127
+# - I Gityran så slarvade jag bort filerna med följande fix:
+# -- Verkar ta filer utan ändelse, eller filer som börjar med "."
+# -- Lade till att den visar antalet filer med missing RAW. Uppdaterade db på LM och W12, behövs ju på ACTUAL och W10 också,
+# dvs ta fram sql:en och testa.
 
 
 
