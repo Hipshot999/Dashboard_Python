@@ -101,10 +101,10 @@
 # Andra försöket i git, tar bort ver-hantering i namnet, och passar på att stega till 1.0
 # 191127
 # - I Gityran så slarvade jag bort filerna med följande fix:
-# -- Verkar ta filer utan ändelse, eller filer som börjar med "."
-# -- Lade till att den visar antalet filer med missing RAW. Uppdaterade db på LM och W12, behövs ju på ACTUAL och W10 också,
+# -- Lade till att den visar antalet filer med missing RAW.
+# --- Uppdaterade db på LM och W12, behövs ju på ACTUAL och W10 också,
 # dvs ta fram sql:en och testa.
-
+# --- GUIt behöver fixas, själva Dashboarden saknar klumnen missing RAW. 
 
 
 import os
@@ -124,7 +124,6 @@ import sqlite3
 from tkinter import ttk # Denna innehåller comboboxen - drop down.
 
 # generate_md5_Checksum_def är en funktion som ligger i en separat fil,
-# generate_md5_Checksum_def.py
 from generate_md5_Checksum_def import md5Checksum
 from connect_sqlite_db import connect_sqlite_db
 
@@ -158,6 +157,7 @@ def folderThread(main_folder):
     md5_OK              = 0
     md5_NOK             = 0
     md5_not_found       = 0
+    md5_missing_raw     = 0
     xmp_file_counter    = 0
     results             = []
     time1               = time.time()
@@ -208,16 +208,16 @@ def folderThread(main_folder):
                                         md5_OK +=1
                                         if verbose: print("md5 stämmer " + " subdir " + subdir + " file " + file)
                                     else:
-                                        if print_errors: print("md5 fail: " + subdir + "\\"  +  str(raw_file))
                                         results.append((subdir, file, md5_xmp, md5_calculated, 'NOK', todays_date))
                                         md5_NOK +=1
-
+                                        if print_errors: print("md5 fail: " + subdir + "\\"  +  str(raw_file))
+                                        
                                     break
 
                         if not found_raw:  # Efter break exekveras denna. Tror jag...
                             if print_errors: print("xmp without matching raw: " + subdir + "\\"  +  str(raw_file))
                             results.append((subdir, file, 'No valid raw file found', '-', 'NOK', todays_date))
-                            md5_NOK +=1
+                            md5_missing_raw +=1
 
                     else: # index_containing_substring returns zero, PelleTags not present in xmp-file
                         if print_errors: print("Error, no md5 sum in file " + subdir + "\\" + file)
@@ -225,8 +225,7 @@ def folderThread(main_folder):
                         results.append((subdir, file, 'No md5 in xmp', md5_calculated, 'NOK', todays_date))
 
                     f.close()
-                    if verbose: print("results[] for md5_OK+md5_NOK = " + str(md5_OK+md5_NOK))
-                    #if verbose: print(results[md5_OK+md5_NOK-1])
+
                     if xmp_file_counter % limited_printouts == 0:
                         if vital_stats: print("Thread identity: " + str(threading.get_ident()) + ", " + str(xmp_file_counter) + " xmp-files processed in "
                                               + str(round(time.time()-time1)) + " seconds, local time " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
@@ -245,14 +244,15 @@ def folderThread(main_folder):
         if print_errors: print("Thread identity: " + str(threading.get_ident()) + " Failed to INSERT INTO md5_results sqlite table", error)
 
     try:
-        cur.execute("UPDATE dashboard SET last_run = ?, tot_xmp = ?, ok_xmp = ?, nok_xmp = ? WHERE main_path = '" + main_folder + "'",
-                (todays_date, md5_OK+md5_NOK, md5_OK, md5_NOK,))
+        cur.execute("UPDATE dashboard SET last_run = ?, tot_xmp = ?, ok_xmp = ?, nok_xmp = ?, missing_raw = ?, missing_xmp = ? WHERE main_path = '" + main_folder + "'",
+                (todays_date, md5_OK+md5_NOK, md5_OK, md5_NOK,md5_missing_raw,md5_not_found))
         if vital_stats: print("Thread identity: " + str(threading.get_ident()) + " Second sql segment: Rows returned from execute UPDATE dashboard = " + str(cur.rowcount))
     except sqlite3.Error as error:
         if print_errors: print("Thread identity: " + str(threading.get_ident()) + " Failed to UPDATE dashboard from sqlite table", error)
 
-    if vital_stats: print("Thread identity: " + str(threading.get_ident()) + " Run results for path: " + main_folder + " md5_OK: " + str(md5_OK) + " md5_NOK: " + str(md5_NOK) + " md5__not_found " + str(md5_not_found)
-                + ", in " + str(round(time.time()-time1)) + " seconds, finished at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ".")
+    if vital_stats: print("Thread identity: " + str(threading.get_ident()) + " Run results for path: " + main_folder + " md5_OK=" + str(md5_OK) + " md5_NOK=" +
+                str(md5_NOK) + " md5__not_found=" + str(md5_not_found) + " md5_missing_raw=" + str(md5_missing_raw) + ", in " + str(round(time.time()-time1)) +
+                " seconds, finished at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + ".")
 
 
 def runrunrun():
@@ -301,14 +301,15 @@ def build_dashboard():
 
     max_width = max(len(x) for x in main_folders)  # needed to size the cell with path
     # this will create a label widget 
-    l1 = Label(master, relief=RIDGE, text   = "Folder path", width = max_width) 
-    l2 = Label(master, relief=RIDGE, text   = "Last run", width = 12) 
+    l1 = Label(master, relief=RIDGE,  text  = "Folder path", width = max_width) 
+    l2 = Label(master, relief=RIDGE,  text  = "Last run", width = 12) 
     l3 = Label(master, relief=RIDGE,  text  = "Tot last count xmp") 
     l4 = Label(master, relief=RIDGE,  text  = "Tot db xmp") 
     l5 = Label(master, relief=RIDGE,  text  = "OK xmp") 
     l6 = Label(master, relief=RIDGE,  text  = "NOK xmp") 
-    #l7 = Label(master, relief=RIDGE,  text = "Missing RAW") 
-    l8 = Label(master, relief=RIDGE,  text  = "Start/Restart") 
+    l7 = Label(master, relief=RIDGE,  text  = "Missing RAW") 
+    l8 = Label(master, relief=RIDGE,  text  = "Missing xmp") 
+    l9 = Label(master, relief=RIDGE,  text  = "Start/Restart") 
 
     # grid method to arrange labels in respective 
     # rows and columns as specified 
@@ -318,8 +319,9 @@ def build_dashboard():
     l4.grid(row = 0, column = 3, sticky = W, pady = 2) 
     l5.grid(row = 0, column = 4, sticky = W, pady = 2)
     l6.grid(row = 0, column = 5, sticky = W, pady = 2) 
-    #l7.grid(row = 0, column = 6, sticky = W, pady = 2) 
-    l8.grid(row = 0, column = 6, sticky = W, pady = 2)
+    l7.grid(row = 0, column = 6, sticky = W, pady = 2) 
+    l8.grid(row = 0, column = 7, sticky = W, pady = 2)
+    l9.grid(row = 0, column = 8, sticky = W, pady = 2)
 
     for ii, each_row in enumerate(dashboard):
     #    print(each_row)
@@ -330,7 +332,8 @@ def build_dashboard():
         l4 = Label(master, text = each_row[3]) 
         l5 = Label(master, text = each_row[4]) 
         l6 = Label(master, text = each_row[5]) 
-        l8 = Label(master, text = each_row[6])   
+        l7 = Label(master, text = each_row[6])   
+        l8 = Label(master, text = each_row[7])   
 
         l1.grid(row = ii+1, column = 0, sticky = W, pady = 5, padx = 5) 
         l2.grid(row = ii+1, column = 1, sticky = W, pady = 5, padx = 5) 
@@ -338,7 +341,8 @@ def build_dashboard():
         l4.grid(row = ii+1, column = 3, sticky = W, pady = 5, padx = 5) 
         l5.grid(row = ii+1, column = 4, sticky = W, pady = 5, padx = 5) 
         l6.grid(row = ii+1, column = 5, sticky = W, pady = 5, padx = 5)
-
+        l7.grid(row = ii+1, column = 6, sticky = W, pady = 5, padx = 5)
+        l8.grid(row = ii+1, column = 7, sticky = W, pady = 5, padx = 5)
     
     valores=("Do nothing", "Restart", "New run")
 
@@ -346,18 +350,19 @@ def build_dashboard():
     for index, key_name in enumerate(dashboard):
         combo[key_name[1]] = ttk.Combobox(master, values=valores)
         combo[key_name[1]].set("Do nothing ")
-        combo[key_name[1]].grid(row = 1+index, column = 6, sticky = W, pady = 6, padx = 5)
+        combo[key_name[1]].grid(row = 1+index, column = 8, sticky = W, pady = 6, padx = 5)
 
     # button widget
     b1 = Button(master, text = "Cancel", width = 9, command=quitquit) 
     b2 = Button(master, text = "Go", width = 9, command=runrunrun) 
     # arranging button widgets 
-    b1.grid(row = ii+2, column = 6, sticky = W) 
-    b2.grid(row = ii+2, column = 6, sticky = E) 
+    b1.grid(row = ii+2, column = 8, sticky = W) 
+    b2.grid(row = ii+2, column = 8, sticky = E) 
 
     # infinite loop which can be terminated  
     # by keyboard or mouse interrupt 
     mainloop() 
+
 
 def get_list_of_folders(main_folders_2):
     tmp = []
