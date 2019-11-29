@@ -108,6 +108,7 @@
 # - Allt ovan nu fixat, behöver lägga till SQL för att uppdatera db på W10&ACTUAL
 # 191129
 # - Lade till antal dagar sedan senaste körningen.
+# - Lade till delta seconds sedan varje limited_printouts.
 
 import os
 from os.path import join
@@ -441,7 +442,7 @@ def run_thru_folders():
 
 verbose             = 1
 vital_stats         = 1
-limited_printouts   = 1
+limited_printouts   = 1000
 print_errors        = 1
 md5_index           = []
 xmp_tracker         = []
