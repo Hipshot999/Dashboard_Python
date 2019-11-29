@@ -105,7 +105,9 @@
 # --- Uppdaterade db på LM och W12, behövs ju på ACTUAL och W10 också,
 # dvs ta fram sql:en och testa.
 # --- GUIt behöver fixas, själva Dashboarden saknar klumnen missing RAW. 
-# - Allt ovan nu fixat, behöver lägga till SQL för att uppdatera db på W10&ACTUAL.
+# - Allt ovan nu fixat, behöver lägga till SQL för att uppdatera db på W10&ACTUAL
+# 191129
+# - Lade till antal dagar sedan senaste körningen.
 
 import os
 from os.path import join
@@ -299,50 +301,59 @@ def build_dashboard():
 
     global master
 
+    date_format = "%Y-%m-%d"
+    todays_date = datetime.date.today().strftime(date_format)
+
+
     max_width = max(len(x) for x in main_folders)  # needed to size the cell with path
     # this will create a label widget 
-    l1 = Label(master, relief=RIDGE,  text  = "Folder path", width = max_width) 
-    l2 = Label(master, relief=RIDGE,  text  = "Last run", width = 12) 
-    l3 = Label(master, relief=RIDGE,  text  = "Tot last count xmp") 
-    l4 = Label(master, relief=RIDGE,  text  = "Tot db xmp") 
-    l5 = Label(master, relief=RIDGE,  text  = "OK xmp") 
-    l6 = Label(master, relief=RIDGE,  text  = "NOK xmp") 
-    l7 = Label(master, relief=RIDGE,  text  = "Missing RAW") 
-    l8 = Label(master, relief=RIDGE,  text  = "Missing xmp") 
-    l9 = Label(master, relief=RIDGE,  text  = "Start/Restart") 
+    col_1 = Label(master, relief=RIDGE,  text  = "Folder path", width = max_width) 
+    col_2 = Label(master, relief=RIDGE,  text  = "Last run", width = 12)
+    col_3 = Label(master, relief=RIDGE,  text  = "Days since last run", width = 18)
+    col_4 = Label(master, relief=RIDGE,  text  = "Tot last count xmp") 
+    col_5 = Label(master, relief=RIDGE,  text  = "Tot db xmp") 
+    col_6 = Label(master, relief=RIDGE,  text  = "OK xmp") 
+    col_7 = Label(master, relief=RIDGE,  text  = "NOK xmp") 
+    col_8 = Label(master, relief=RIDGE,  text  = "Missing RAW") 
+    col_9 = Label(master, relief=RIDGE,  text  = "Missing xmp") 
+    col_10 = Label(master, relief=RIDGE,  text  = "Start/Restart") 
 
     # grid method to arrange labels in respective 
     # rows and columns as specified 
-    l1.grid(row = 0, column = 0, sticky = W, pady = 2) 
-    l2.grid(row = 0, column = 1, sticky = W, pady = 2) 
-    l3.grid(row = 0, column = 2, sticky = W, pady = 2) 
-    l4.grid(row = 0, column = 3, sticky = W, pady = 2) 
-    l5.grid(row = 0, column = 4, sticky = W, pady = 2)
-    l6.grid(row = 0, column = 5, sticky = W, pady = 2) 
-    l7.grid(row = 0, column = 6, sticky = W, pady = 2) 
-    l8.grid(row = 0, column = 7, sticky = W, pady = 2)
-    l9.grid(row = 0, column = 8, sticky = W, pady = 2)
+    col_1.grid(row = 0, column = 0, sticky = W, pady = 2) 
+    col_2.grid(row = 0, column = 1, sticky = W, pady = 2) 
+    col_3.grid(row = 0, column = 2, sticky = W, pady = 2) 
+    col_4.grid(row = 0, column = 3, sticky = W, pady = 2) 
+    col_5.grid(row = 0, column = 4, sticky = W, pady = 2)
+    col_6.grid(row = 0, column = 5, sticky = W, pady = 2) 
+    col_7.grid(row = 0, column = 6, sticky = W, pady = 2) 
+    col_8.grid(row = 0, column = 7, sticky = W, pady = 2)
+    col_9.grid(row = 0, column = 8, sticky = W, pady = 2)
+    col_10.grid(row = 0, column = 9, sticky = W, pady = 2)
 
     for ii, each_row in enumerate(dashboard):
     #    print(each_row)
     #    print(ii)
-        l1 = Label(master, text = each_row[1]) 
-        l2 = Label(master, text = each_row[2])
-        l3 = Label(master, text = xmp_tracker[ii][1])
-        l4 = Label(master, text = each_row[3]) 
-        l5 = Label(master, text = each_row[4]) 
-        l6 = Label(master, text = each_row[5]) 
-        l7 = Label(master, text = each_row[6])   
-        l8 = Label(master, text = each_row[7])   
+        col_1 = Label(master, text = each_row[1]) 
+        col_2 = Label(master, text = each_row[2])
+        col_3 = Label(master, text = (datetime.datetime.strptime(todays_date, date_format)- datetime.datetime.strptime(each_row[2], date_format)).days)
+        col_4 = Label(master, text = xmp_tracker[ii][1])
+        col_5 = Label(master, text = each_row[3]) 
+        col_6 = Label(master, text = each_row[4])
+        col_7 = Label(master, text = each_row[5]) 
+        col_8 = Label(master, text = each_row[6])   
+        col_9 = Label(master, text = each_row[7])   
 
-        l1.grid(row = ii+1, column = 0, sticky = W, pady = 5, padx = 5) 
-        l2.grid(row = ii+1, column = 1, sticky = W, pady = 5, padx = 5) 
-        l3.grid(row = ii+1, column = 2, sticky = W, pady = 5, padx = 5)
-        l4.grid(row = ii+1, column = 3, sticky = W, pady = 5, padx = 5) 
-        l5.grid(row = ii+1, column = 4, sticky = W, pady = 5, padx = 5) 
-        l6.grid(row = ii+1, column = 5, sticky = W, pady = 5, padx = 5)
-        l7.grid(row = ii+1, column = 6, sticky = W, pady = 5, padx = 5)
-        l8.grid(row = ii+1, column = 7, sticky = W, pady = 5, padx = 5)
+        col_1.grid(row = ii+1, column = 0, sticky = W, pady = 5, padx = 5) 
+        col_2.grid(row = ii+1, column = 1, sticky = W, pady = 5, padx = 5) 
+        col_3.grid(row = ii+1, column = 2, sticky = W, pady = 5, padx = 5)
+        col_4.grid(row = ii+1, column = 3, sticky = W, pady = 5, padx = 5) 
+        col_5.grid(row = ii+1, column = 4, sticky = W, pady = 5, padx = 5) 
+        col_6.grid(row = ii+1, column = 5, sticky = W, pady = 5, padx = 5)
+        col_7.grid(row = ii+1, column = 6, sticky = W, pady = 5, padx = 5)
+        col_8.grid(row = ii+1, column = 7, sticky = W, pady = 5, padx = 5)
+        col_9.grid(row = ii+1, column = 8, sticky = W, pady = 5, padx = 5)
+    
     
     valores=("Do nothing", "Restart", "New run")
 
@@ -350,14 +361,14 @@ def build_dashboard():
     for index, key_name in enumerate(dashboard):
         combo[key_name[1]] = ttk.Combobox(master, values=valores)
         combo[key_name[1]].set("Do nothing ")
-        combo[key_name[1]].grid(row = 1+index, column = 8, sticky = W, pady = 6, padx = 5)
+        combo[key_name[1]].grid(row = 1+index, column = 9, sticky = W, pady = 6, padx = 5)
 
     # button widget
     b1 = Button(master, text = "Cancel", width = 9, command=quitquit) 
     b2 = Button(master, text = "Go", width = 9, command=runrunrun) 
     # arranging button widgets 
-    b1.grid(row = ii+2, column = 8, sticky = W) 
-    b2.grid(row = ii+2, column = 8, sticky = E) 
+    b1.grid(row = ii+2, column = 9, sticky = W) 
+    b2.grid(row = ii+2, column = 9, sticky = E) 
 
     # infinite loop which can be terminated  
     # by keyboard or mouse interrupt 
