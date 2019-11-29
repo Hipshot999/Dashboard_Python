@@ -182,6 +182,7 @@ def folderThread(main_folder):
     except sqlite3.Error as error:
         if print_errors: print(" Thread identity: " + str(threading.get_ident()) + "Failed to UPDATE dashboard from sqlite table", error, flush=True)
 
+    time2 = time.time()
     for subdir, dirs, files in os.walk(main_folder):
         for file in files:
             found_raw = 0
@@ -230,7 +231,10 @@ def folderThread(main_folder):
 
                     if xmp_file_counter % limited_printouts == 0:
                         if vital_stats: print("Thread identity: " + str(threading.get_ident()) + ", " + str(xmp_file_counter) + " xmp-files processed in "
-                                              + str(round(time.time()-time1)) + " seconds, local time " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+                                + str(round(time.time()-time1)) + " seconds, delta time " + str(round(time.time()-time2)) + " seconds, local time " +
+                                time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+                        time2 = time.time()
+                        
 
             except:
                 if print_errors:
@@ -437,7 +441,7 @@ def run_thru_folders():
 
 verbose             = 1
 vital_stats         = 1
-limited_printouts   = 400
+limited_printouts   = 1
 print_errors        = 1
 md5_index           = []
 xmp_tracker         = []
