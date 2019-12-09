@@ -109,6 +109,8 @@
 # 191129
 # - Lade till antal dagar sedan senaste körningen.
 # - Lade till delta seconds sedan varje limited_printouts.
+# 191209
+# - Git test
 
 import os
 from os.path import join
@@ -131,15 +133,12 @@ from generate_md5_Checksum_def import md5Checksum
 from connect_sqlite_db import connect_sqlite_db
 
 
-def index_containing_substring(the_list, substring):  # returns the line number of the md5 sum, zero if no md5.
+def index_containing_substring(the_list, substring):  # returns the md5 sum, zero if no md5.
     for i, s in enumerate(the_list):
         if substring in s:
-            if substring[0] == '<':
-                md5 = s[s.find(substring)+28:s.find(substring)+60]
-            else:
-                md5 = s[s.find(substring)+28:s.find(substring)+60]
-
+            md5 = s[s.find(substring)+28:s.find(substring)+60]
             return md5
+
     return 0
 
 
@@ -193,8 +192,12 @@ def folderThread(main_folder):
                     if verbose: print ('Found file: ' + file, flush=True)
                     f = open(subdir+'\\'+ file,"r")
                     list_file = list(f)
-                    md5_index = [index_containing_substring(list_file, '<PelleTags:PelleTag1_md5sum>'),
-        		    index_containing_substring(list_file, 'PelleTags:PelleTag1_md5sum=')]
+                    md5_index_tmp = index_containing_substring(list_file, '<PelleTags:PelleTag1_md5sum>')
+                    if md5_index_tmp == 0:
+                        md5_index = [0, index_containing_substring(list_file, 'PelleTags:PelleTag1_md5sum=')]
+                    else:   
+                        md5_index = [md5_index_tmp,0]
+
                     if verbose: print(md5_index)
 
                     if any(md5_index):    # xmp-filen innehåller en md5-summa.
