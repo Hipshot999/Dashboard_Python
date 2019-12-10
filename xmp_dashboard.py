@@ -114,6 +114,7 @@
 # - Ändrade i index_containing_substring, if-satsen förenklades.
 # - Ändrade i folderThread, md5_index ändrades så att om första anropet till index_containing_substring resulterar
 # i en md5-summa, så görs inte andra anropet utan andra positionen fylls på med en nolla.
+#
 
 import os
 from os.path import join
