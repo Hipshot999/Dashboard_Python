@@ -112,6 +112,7 @@
 # - Lade till delta seconds sedan varje limited_printouts.
 # 191209
 # - Ändrade i index_containing_substring, if-satsen förenklades.
+# 191210
 # - Ändrade i folderThread, md5_index ändrades så att om första anropet till index_containing_substring resulterar
 # i en md5-summa, så görs inte andra anropet utan andra positionen fylls på med en nolla.
 #
@@ -164,6 +165,7 @@ def folderThread(main_folder):
     md5_NOK             = 0
     md5_not_found       = 0
     md5_missing_raw     = 0
+    md5_index           = [0,0]
     xmp_file_counter    = 0
     results             = []
     time1               = time.time()
@@ -196,11 +198,11 @@ def folderThread(main_folder):
                     if verbose: print ('Found file: ' + file, flush=True)
                     f = open(subdir+'\\'+ file,"r")
                     list_file = list(f)
-                    md5_index_tmp = index_containing_substring(list_file, '<PelleTags:PelleTag1_md5sum>')
-                    if md5_index_tmp == 0:
-                        md5_index = [0, index_containing_substring(list_file, 'PelleTags:PelleTag1_md5sum=')]
+                    md5_index[0] = index_containing_substring(list_file, '<PelleTags:PelleTag1_md5sum>')
+                    if md5_index[0] == 0:
+                        md5_index[1] = index_containing_substring(list_file, 'PelleTags:PelleTag1_md5sum=')
                     else:   
-                        md5_index = [md5_index_tmp,0]
+                        md5_index[1] = 0
 
                     if verbose: print(md5_index)
 
