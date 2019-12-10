@@ -18,6 +18,7 @@
 # cur.execute('''CREATE TABLE md5_results (id INTEGER PRIMARY KEY, file_path TEXT NOT NULL, file_name TEXT NOT NULL, md5_file TEXT, md5_calc TEXT, ok_nok TEXT, date TEXT)''')
 # cur.execute("INSERT INTO md5_results (file_path, file_name, md5_file, md5_calc, ok_nok, date) VALUES(?,?,?,?,?,?)", ['C:\Pelle\Dropbox\Hack - xmp dashboard', 'testfil.xmp', '0', '0', '0', '2018-11-07'])
 #
+# ALTER TABLE dashboard ADD COLUMN missing_xmp INTEGER;
 
 
 # ToDo's:
@@ -110,7 +111,9 @@
 # - Lade till antal dagar sedan senaste körningen.
 # - Lade till delta seconds sedan varje limited_printouts.
 # 191209
-# - Git test
+# - Ändrade i index_containing_substring, if-satsen förenklades.
+# - Ändrade i folderThread, md5_index ändrades så att om första anropet till index_containing_substring resulterar
+# i en md5-summa, så görs inte andra anropet utan andra positionen fylls på med en nolla.
 
 import os
 from os.path import join
